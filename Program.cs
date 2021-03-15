@@ -20,7 +20,7 @@ namespace grup_gadu_api
             {
                 DataContext context = services.GetRequiredService<DataContext>();
                 await context.Database.MigrateAsync();
-                await Seed.SeedUsers(context);
+                await Seed.SeedData(context);
             }
             catch (Exception ex)
             {
