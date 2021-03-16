@@ -20,6 +20,7 @@ namespace grup_gadu_api.Data
             await SeedUsers(context);
             await SeedChats(context);
             await SeedUserChats(context);
+           
         }
 
         private static async Task SeedUsers(DataContext context)
@@ -57,23 +58,20 @@ namespace grup_gadu_api.Data
               context.Chats.Add(chat); 
             }
             _chats = chats;
-               await context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         private static async Task SeedUserChats(DataContext context)
         {
             if(await context.UserChats.AnyAsync()) return;
-            Random rnd = new Random();
-
-            foreach(Chat chat in _chats)
+          
+            context.UserChats.AddRange(new List<UserChats> 
             {
-              int start = rnd.Next(0,_users.Count);
-            
-              foreach(AppUser user in _users.GetRange(start, _users.Count - start))
-              {
-                  context.UserChats.Add(new UserChats {Chat = chat, User = user});
-              }
-            }
+              new UserChats {ChatId = 1, UserId = 2},
+              new UserChats {ChatId = 1, UserId = 3},
+              new UserChats {ChatId = 2, UserId = 3},
+              new UserChats {ChatId = 3, UserId = 4},
+            });
             await context.SaveChangesAsync();
         }
     }
