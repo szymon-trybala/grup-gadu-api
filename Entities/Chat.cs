@@ -5,6 +5,10 @@ namespace grup_gadu_api.Entities
 {
     public class Chat
     {
+          public Chat()
+          {
+              Members = new List<UserChats>();
+          }
           public int Id { get; set; }
           public string Name { get; set; }
           public DateTime CreatedAt { get; set; }

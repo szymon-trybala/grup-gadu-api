@@ -16,11 +16,26 @@ namespace grup_gadu_api.Data
         _context = context;
       }
 
-      public async Task<IEnumerable<Chat>> GetChatsAsync(int userId)
+    public async Task<Chat> GetById(int chatId)
+    {
+       return await _context.Chats
+                    .Include(x => x.Owner)
+                    .Include(x => x.Members)
+                    .FirstOrDefaultAsync(x => x.Id == chatId);
+    }
+
+    public async Task<Chat> GetByName(string chatName)
+    {
+      return await _context.Chats
+                    .FirstOrDefaultAsync(x => x.Name == chatName);
+    }
+
+    public async Task<IEnumerable<Chat>> GetChatsAsync(int userId)
       {
           return await _context.Chats
                  .Include(x=> x.Owner)
                  .Include(x=> x.Members)
+                 .ThenInclude(x => x.User)
                  .Where(chat => chat.Members.Any(x=> x.UserId == userId) || chat.OwnerId == userId)
                  .ToListAsync();
       }
