@@ -9,9 +9,10 @@ using grup_gadu_api.Data;
 
 namespace grup_gadu_api
 {
+  #pragma warning disable CS1591
     public class Program
     {
-         public static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             IHost host = CreateHostBuilder(args).Build();
             using IServiceScope scope = host.Services.CreateScope();
@@ -38,4 +39,5 @@ namespace grup_gadu_api
                   webBuilder.UseStartup<Startup>();
               });
     }
+    #pragma warning restore CS1591
 }
