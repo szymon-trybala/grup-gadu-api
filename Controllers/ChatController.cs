@@ -68,20 +68,20 @@ namespace grup_gadu_api.Controllers
     /// Dodaje usera do danego czatu
     /// </summary> 
     [HttpPost("[action]")]
-    public async Task<ActionResult> Invite([FromQuery] int userId, [FromQuery] int chatId)
+    public async Task<ActionResult> Invite([FromQuery] string userLogin, [FromQuery] int chatId)
     {
       Chat chat = await _chatRepository.GetById(chatId);
-      AppUser user = await _userRepository.GetUserByIdAsync(userId);
+      AppUser user = await _userRepository.GetUserByLoginAsync(userLogin);
       
-      if (user == null)  return NotFound($"User with id {userId} was not found");
+      if (user == null)  return NotFound($"User with login {userLogin} was not found");
       if (chat == null) return NotFound($"Chat with id {chatId} was not found");
-      if (chat.OwnerId == userId) return BadRequest($"User with id {userId} is the admin of chat with id {chatId}");
+      if (chat.OwnerId == user.Id) return BadRequest($"User with id {user.Id} is the admin of chat with id {chatId}");
       if (chat.OwnerId == User.GetUserId()) return BadRequest($"You do not have administrator privileges to add members to the chat");
 
-      UserChats userChat = await _context.UserChats.FirstOrDefaultAsync(x => x.ChatId == chatId && x.UserId == userId);
-      if (userChat != null) return BadRequest($"User with id {userId} is already in the chat with id {chatId}");
+      UserChats userChat = await _context.UserChats.FirstOrDefaultAsync(x => x.ChatId == chatId && x.UserId == user.Id);
+      if (userChat != null) return BadRequest($"User with id {user.Id} is already in the chat with id {chatId}");
 
-      _context.UserChats.Add(new UserChats { ChatId = chatId, UserId = userId });
+      _context.UserChats.Add(new UserChats { ChatId = chatId, UserId = user.Id });
       await _context.SaveChangesAsync();
 
       return Ok();
