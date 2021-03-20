@@ -12,6 +12,9 @@ using grup_gadu_api.Helpers;
 using grup_gadu_api.Interfaces;
 using grup_gadu_api.Services;
 using System.Text;
+using System.Reflection;
+using System.IO;
+using System;
 
 namespace grup_gadu_api
 {
@@ -29,11 +32,13 @@ namespace grup_gadu_api
         {
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IChatRepository, ChatRepository>();
             services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
             services.AddDbContext<DataContext>(opt =>
             {
               opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
+            services.AddControllers();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt => {
                 opt.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -43,10 +48,13 @@ namespace grup_gadu_api
                     ValidateAudience = false
                 };
             });
-            services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "grup_gadu_api", Version = "v1" });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
         }
 
@@ -64,6 +72,7 @@ namespace grup_gadu_api
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
