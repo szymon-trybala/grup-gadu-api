@@ -76,7 +76,7 @@ namespace grup_gadu_api.Controllers
       if (user == null)  return NotFound($"User with login {userLogin} was not found");
       if (chat == null) return NotFound($"Chat with id {chatId} was not found");
       if (chat.OwnerId == user.Id) return BadRequest($"User with id {user.Id} is the admin of chat with id {chatId}");
-      if (chat.OwnerId == User.GetUserId()) return BadRequest($"You do not have administrator privileges to add members to the chat");
+      if (chat.OwnerId != User.GetUserId()) return BadRequest($"You do not have administrator privileges to add members to the chat");
 
       UserChats userChat = await _context.UserChats.FirstOrDefaultAsync(x => x.ChatId == chatId && x.UserId == user.Id);
       if (userChat != null) return BadRequest($"User with id {user.Id} is already in the chat with id {chatId}");
@@ -99,7 +99,9 @@ namespace grup_gadu_api.Controllers
       {
         if(chat.Members.Any()) return BadRequest($"You cannot leave your own chat until there are other chat members");
       }
-
+      var userId = User.GetUserId();
+      var allChats = _context.UserChats.ToList();
+      
       UserChats userChat = await _context.UserChats.FirstOrDefaultAsync(x => x.ChatId == chatId && x.UserId == User.GetUserId());
       if (userChat == null) return BadRequest($"User with id {User.GetUserId()} does not belong to chat with id {chatId}");
 
