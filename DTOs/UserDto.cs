@@ -4,5 +4,6 @@ namespace grup_gadu_api.DTOs
     {
       public string Login { get; set; }
       public string Token { get; set; }
+      public int Id { get; set; }
     }
 }
