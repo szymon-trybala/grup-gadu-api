@@ -41,7 +41,7 @@ namespace grup_gadu_api.Controllers
       _context.Users.Add(user);
       await _context.SaveChangesAsync();
 
-      return new UserDto { Login = user.Login, Token = _tokenService.CreateToken(user) };
+      return new UserDto { Login = user.Login, Token = _tokenService.CreateToken(user), Id = user.Id };
     }
 
     [HttpPost("login")]
@@ -61,7 +61,8 @@ namespace grup_gadu_api.Controllers
       return new UserDto
       {
         Login = user.Login,
-        Token = _tokenService.CreateToken(user)
+        Token = _tokenService.CreateToken(user),
+        Id = user.Id
       };
     }
 
