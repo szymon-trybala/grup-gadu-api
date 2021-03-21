@@ -95,19 +95,21 @@ namespace grup_gadu_api.Controllers
     {
       Chat chat = await _chatRepository.GetById(chatId);
       if (chat == null) return BadRequest($"Chat with id {chatId} was not found");
+
+      int userId = User.GetUserId();
+     
       if(chat.OwnerId == User.GetUserId())
       {
         if(chat.Members.Any()) return BadRequest($"You cannot leave your own chat until there are other chat members");
+        chat.IsActive = false;
       }
-      var userId = User.GetUserId();
-      var allChats = _context.UserChats.ToList();
-      
-      UserChats userChat = await _context.UserChats.FirstOrDefaultAsync(x => x.ChatId == chatId && x.UserId == User.GetUserId());
-      if (userChat == null) return BadRequest($"User with id {User.GetUserId()} does not belong to chat with id {chatId}");
-
-      _context.UserChats.Remove(userChat);
+      else {
+         UserChats userChat = await _context.UserChats.FirstOrDefaultAsync(x => x.ChatId == chatId && x.UserId == User.GetUserId());
+         if (userChat == null) return BadRequest($"User with id {User.GetUserId()} does not belong to chat with id {chatId}");
+         _context.UserChats.Remove(userChat);
+      }
+    
       await _context.SaveChangesAsync();
-
       return Ok();
     }
 
