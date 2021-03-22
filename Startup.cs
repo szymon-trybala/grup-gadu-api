@@ -33,6 +33,7 @@ namespace grup_gadu_api
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IMessagesService, MessagesService>();
             services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
             services.AddDbContext<DataContext>(opt =>
             {
