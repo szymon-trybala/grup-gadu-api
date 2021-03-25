@@ -15,6 +15,7 @@ using System.Text;
 using System.Reflection;
 using System.IO;
 using System;
+using grup_gadu_api.Hubs;
 
 namespace grup_gadu_api
 {
@@ -35,6 +36,7 @@ namespace grup_gadu_api
             services.AddScoped<IChatRepository, ChatRepository>();
             services.AddScoped<IMessagesService, MessagesService>();
             services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+            services.AddSignalR();
             services.AddDbContext<DataContext>(opt =>
             {
               opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
@@ -85,6 +87,7 @@ namespace grup_gadu_api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/hubs/chat");
             });
         }
     }
