@@ -16,7 +16,7 @@ namespace grup_gadu_api.Data.Migrations
                     AuthorId = table.Column<int>(type: "INTEGER", nullable: false),
                     ChatId = table.Column<int>(type: "INTEGER", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Content = table.Column<string>(type: "TEXT", nullable: true, maxLength : 500)
+                    Content = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -47,9 +47,9 @@ namespace grup_gadu_api.Data.Migrations
                 {
                     table.PrimaryKey("PK_UserMessages", x => new { x.MessageId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_UserMessages_Chats_MessageId",
+                        name: "FK_UserMessages_Messages_MessageId",
                         column: x => x.MessageId,
-                        principalTable: "Chats",
+                        principalTable: "Messages",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -79,10 +79,10 @@ namespace grup_gadu_api.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Messages");
+                name: "UserMessages");
 
             migrationBuilder.DropTable(
-                name: "UserMessages");
+                name: "Messages");
         }
     }
 }

@@ -172,8 +172,8 @@ namespace grup_gadu_api.Data.Migrations
 
             modelBuilder.Entity("grup_gadu_api.Entities.UserMessages", b =>
                 {
-                    b.HasOne("grup_gadu_api.Entities.Chat", "Message")
-                        .WithMany()
+                    b.HasOne("grup_gadu_api.Entities.Message", "Message")
+                        .WithMany("SeenBy")
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -197,6 +197,11 @@ namespace grup_gadu_api.Data.Migrations
             modelBuilder.Entity("grup_gadu_api.Entities.Chat", b =>
                 {
                     b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("grup_gadu_api.Entities.Message", b =>
+                {
+                    b.Navigation("SeenBy");
                 });
 #pragma warning restore 612, 618
         }
