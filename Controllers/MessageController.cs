@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using grup_gadu_api.DTOs;
 using grup_gadu_api.Entities;
 using grup_gadu_api.Extensions;
 using grup_gadu_api.Interfaces;
@@ -17,10 +18,16 @@ namespace grup_gadu_api.Controllers
       _messagesService = messagesService;
     }
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Message>>> List([FromQuery] int chatId)
+    [HttpGet("[action]")]
+    public async Task<ActionResult<IEnumerable<MessageDto>>> All([FromQuery] int chatId)
     {
-      return Ok(await _messagesService.GetMessages(chatId));
+      return Ok(await _messagesService.GetAllMessages(User.GetUserId(), chatId));
+    }
+
+    [HttpGet("[action]")]
+    public async Task<ActionResult<IEnumerable<MessageDto>>> Unread([FromQuery] int chatId)
+    {
+      return Ok(await _messagesService.GetUnreadMessages(User.GetUserId(),chatId));
     }
 
     [HttpPost]
