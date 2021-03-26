@@ -10,5 +10,6 @@ namespace grup_gadu_api.DTOs
         public DateTime CreatedAt { get; set; }
         public MemberDto Owner { get; set; }
         public List<MemberDto> Members { get; set; }
+        public int UnreadMessages { get; set; }
     }
 }

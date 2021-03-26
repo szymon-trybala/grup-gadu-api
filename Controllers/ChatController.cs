@@ -61,7 +61,18 @@ namespace grup_gadu_api.Controllers
     public async Task<ActionResult<IEnumerable<ChatDto>>> List()
     {
       IEnumerable<Chat> chats = await this._chatRepository.GetChatsAsync(User.GetUserId());
-      return Ok(_mapper.Map<IEnumerable<ChatDto>>(chats));
+      var chatsDto = _mapper.Map<IEnumerable<ChatDto>>(chats);
+
+      foreach(var chatDto in chatsDto)
+      {
+           chatDto.UnreadMessages = await _context.Messages
+           .Include(x=> x.SeenBy)
+           .Where(x => x.ChatId == chatDto.Id)
+           .Where(x => x.AuthorId != User.GetUserId())
+           .Where(x=> !x.SeenBy.Any(y=> y.MessageId == x.Id && y.UserId == User.GetUserId()))
+           .CountAsync();
+      }
+      return Ok(chatsDto);
     }
 
     /// <summary>
