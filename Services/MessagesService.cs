@@ -25,7 +25,7 @@ namespace grup_gadu_api.Services
       _context = context;
       _mapper = mapper;
     }
-    public async Task CreateMessage(int userId, int chatId, string messageContent)
+    public async Task<MessageDto>CreateMessage(int userId, int chatId, string messageContent)
     {
         ReaderWriterLockSlim slimLock = locks.GetOrAdd(chatId, new ReaderWriterLockSlim());
         slimLock.EnterWriteLock();
@@ -41,6 +41,8 @@ namespace grup_gadu_api.Services
             };
             _context.Messages.Add(msg);
             await _context.SaveChangesAsync();
+
+            return _mapper.Map<MessageDto>(await GetMessageById(msg.Id));
         }
         finally
         {
@@ -73,30 +75,30 @@ namespace grup_gadu_api.Services
         
     }
 
-    public async Task<List<MessageDto>> GetUnreadMessages(int userId, int chatId)
-    {   
-        ReaderWriterLockSlim slimLock = locks.GetOrAdd(chatId, new ReaderWriterLockSlim());
-        slimLock.EnterReadLock();
-        try
-        {
-            var result = await _context.Messages
-              .Include(x=> x.Author)
-              .Include(x=> x.SeenBy)
-              .Include(x=> x.Chat)
-              .Where(x => x.ChatId == chatId)
-              .Where(x=> !x.SeenBy.Any(y=> y.MessageId == x.Id && y.UserId == userId))
-              .OrderBy(x => x.CreatedAt)
-              .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
-              .ToListAsync();
+    // public async Task<List<MessageDto>> GetUnreadMessages(int userId, int chatId)
+    // {   
+    //     ReaderWriterLockSlim slimLock = locks.GetOrAdd(chatId, new ReaderWriterLockSlim());
+    //     slimLock.EnterReadLock();
+    //     try
+    //     {
+    //         var result = await _context.Messages
+    //           .Include(x=> x.Author)
+    //           .Include(x=> x.SeenBy)
+    //           .Include(x=> x.Chat)
+    //           .Where(x => x.ChatId == chatId)
+    //           .Where(x=> !x.SeenBy.Any(y=> y.MessageId == x.Id && y.UserId == userId))
+    //           .OrderBy(x => x.CreatedAt)
+    //           .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
+    //           .ToListAsync();
 
-              await MarkMessagesAsRead(userId,chatId);
-              return result;
-        }
-        finally
-        {
-            slimLock.ExitReadLock();
-        }
-    }
+    //           //await MarkMessagesAsRead(userId,chatId);
+    //           return result;
+    //     }
+    //     finally
+    //     {
+    //         slimLock.ExitReadLock();
+    //     }
+    // }
 
     private async Task MarkMessagesAsRead(int userId, int chatId)
     {
@@ -123,6 +125,16 @@ namespace grup_gadu_api.Services
 
         _context.UserMessages.AddRange(userMessages);
         await _context.SaveChangesAsync();
+    }
+
+    private async Task<Message> GetMessageById(int messageId)
+    {
+          return await _context.Messages
+            .Include(x=> x.Author)
+            .Include(x=> x.SeenBy)
+            .Include(x=> x.Chat)
+            .Where(x => x.Id == messageId)
+            .FirstOrDefaultAsync();
     }
   }
 }

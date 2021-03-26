@@ -24,11 +24,11 @@ namespace grup_gadu_api.Controllers
       return Ok(await _messagesService.GetAllMessages(User.GetUserId(), chatId));
     }
 
-    [HttpGet("[action]")]
-    public async Task<ActionResult<IEnumerable<MessageDto>>> Unread([FromQuery] int chatId)
-    {
-      return Ok(await _messagesService.GetUnreadMessages(User.GetUserId(),chatId));
-    }
+    // [HttpGet("[action]")]
+    // public async Task<ActionResult<IEnumerable<MessageDto>>> Unread([FromQuery] int chatId)
+    // {
+    //   return Ok(await _messagesService.GetUnreadMessages(User.GetUserId(),chatId));
+    // }
 
     [HttpPost]
     public async Task<ActionResult> Create([FromQuery]int chatId, [FromQuery]string messageContent)

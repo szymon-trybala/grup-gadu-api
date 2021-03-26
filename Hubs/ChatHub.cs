@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using grup_gadu_api.DTOs;
-using grup_gadu_api.Entities;
 using grup_gadu_api.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
@@ -22,8 +21,8 @@ namespace grup_gadu_api.Hubs
 
         public async Task Send(int userId, int chatId, string message)
         {
-            await _messagesService.CreateMessage(userId, chatId, message);
-            await Clients.Group(chatId.ToString()).SendAsync("newMessage", chatId);
+            MessageDto msg = await _messagesService.CreateMessage(userId, chatId, message);
+            await Clients.Group(chatId.ToString()).SendAsync("newMessage", msg);
         }
 
         public async Task Leave(int chatId)
