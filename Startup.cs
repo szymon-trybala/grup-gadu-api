@@ -15,6 +15,7 @@ using System.Text;
 using System.Reflection;
 using System.IO;
 using System;
+using grup_gadu_api.Hubs;
 
 namespace grup_gadu_api
 {
@@ -33,11 +34,21 @@ namespace grup_gadu_api
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IChatRepository, ChatRepository>();
+            services.AddScoped<IMessagesService, MessagesService>();
             services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+            services.AddSignalR();
             services.AddDbContext<DataContext>(opt =>
             {
               opt.UseSqlite(Configuration.GetConnectionString("DefaultConnection"));
             });
+            services.AddCors(options => options.AddPolicy("CorsPolicy", builder =>
+            {
+                builder
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithOrigins("http://localhost:3000")
+                    .AllowCredentials();
+            }));
             services.AddControllers();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt => {
                 opt.TokenValidationParameters = new TokenValidationParameters
@@ -67,9 +78,7 @@ namespace grup_gadu_api
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "grup_gadu_api v1"));
             }
-
-            //app.UseHttpsRedirection();
-
+            app.UseCors("CorsPolicy");
             app.UseRouting();
 
             app.UseAuthentication();
@@ -78,6 +87,7 @@ namespace grup_gadu_api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/hubs/chat");
             });
         }
     }
