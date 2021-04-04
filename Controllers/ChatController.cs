@@ -36,9 +36,9 @@ namespace grup_gadu_api.Controllers
     [HttpPost("[action]")]
     public async Task<ActionResult<ChatDto>> Create([FromQuery] string name)
     {
-      string chatName = name.ToLower();
-      if(await _chatRepository.GetByName(chatName) != null) 
-          return BadRequest($"Chat with name {chatName} already exists");
+        string chatName = name.ToLower();
+        if(await _chatRepository.GetByName(chatName) != null) 
+            return BadRequest($"Chat with name {chatName} already exists");
 
         Chat chat = new Chat
         {
@@ -51,11 +51,12 @@ namespace grup_gadu_api.Controllers
         _context.Chats.Add(chat);
         await _context.SaveChangesAsync();
 
-         return Created("",_mapper.Map<ChatDto>(await _chatRepository.GetById(chat.Id)));
+        return Created("",_mapper.Map<ChatDto>(await _chatRepository.GetById(chat.Id)));
     }
 
     /// <summary>
-    /// Zwraca liste czatow do ktorych nalezy user lub ktore adminuje
+    /// Zwraca liste czatow do ktorych nalezy user 
+    ///lub ktore adminuje wraz z informajca o ilosc nieodczytanych wiadomosci
     /// </summary> 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ChatDto>>> List()

@@ -12,6 +12,5 @@ namespace grup_gadu_api.DTOs
       public string ChatName { get; set; }
       public DateTime CreatedAt { get; set; }
       public string Content { get; set; }
-      public virtual List<SeenByDto> SeenBy { get; set; }
     }
 }
