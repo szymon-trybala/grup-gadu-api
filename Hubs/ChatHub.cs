@@ -24,7 +24,6 @@ namespace grup_gadu_api.Hubs
             MessageDto msg = await _messagesService.CreateMessage(userId, chatId, message);
             await Clients.Group(chatId.ToString()).SendAsync("newMessage", msg);
         }
-
         public async Task Leave(int chatId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId.ToString());

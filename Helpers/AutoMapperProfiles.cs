@@ -18,10 +18,7 @@ namespace grup_gadu_api.Helpers
 
           CreateMap<Message, MessageDto>()
             .ForMember(x => x.AuthorLogin, opt => opt.MapFrom(src => src.Author.Login))
-            .ForMember(x => x.ChatName, opt => opt.MapFrom(src => src.Chat.Name))
-            .ForMember(x => x.SeenBy, opt => opt.MapFrom(src => new List<SeenByDto>(src.SeenBy.Select(x => new SeenByDto 
-            {Login = x.User.Login, Id = x.UserId, SeenAt = x.SeenAt}))));
-
+            .ForMember(x => x.ChatName, opt => opt.MapFrom(src => src.Chat.Name));
         }
     }
 }

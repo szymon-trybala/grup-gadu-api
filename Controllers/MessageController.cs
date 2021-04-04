@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using grup_gadu_api.DTOs;
-using grup_gadu_api.Entities;
 using grup_gadu_api.Extensions;
 using grup_gadu_api.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,23 +17,13 @@ namespace grup_gadu_api.Controllers
       _messagesService = messagesService;
     }
 
+    /// <summary>
+    /// Pobiera wszytskie wiadomości z danego czatu
+    /// </summary> 
     [HttpGet("[action]")]
     public async Task<ActionResult<IEnumerable<MessageDto>>> All([FromQuery] int chatId)
     {
       return Ok(await _messagesService.GetAllMessages(User.GetUserId(), chatId));
-    }
-
-    // [HttpGet("[action]")]
-    // public async Task<ActionResult<IEnumerable<MessageDto>>> Unread([FromQuery] int chatId)
-    // {
-    //   return Ok(await _messagesService.GetUnreadMessages(User.GetUserId(),chatId));
-    // }
-
-    [HttpPost]
-    public async Task<ActionResult> Create([FromQuery]int chatId, [FromQuery]string messageContent)
-    {
-      await _messagesService.CreateMessage(User.GetUserId(), chatId, messageContent);
-      return Ok();
     }
   }
 }
