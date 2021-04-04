@@ -27,9 +27,12 @@ namespace grup_gadu_api.Services
     }
     public async Task<MessageDto>CreateMessage(int userId, int chatId, string messageContent)
     {
+        if(!(await HasPermission(userId, chatId))) 
+        throw new InvalidOperationException($"User does not have permission to participate in chat with id:{chatId}");
+        
         ReaderWriterLockSlim slimLock = locks.GetOrAdd(chatId, new ReaderWriterLockSlim());
         slimLock.EnterWriteLock();
-        
+      
         try
         {
             Message msg = new Message
@@ -56,17 +59,13 @@ namespace grup_gadu_api.Services
         slimLock.EnterReadLock();
         try
         {
-            var result =  await _context.Messages
+           return await _context.Messages
               .Include(x=> x.Author)
-              .Include(x=> x.SeenBy)
               .Include(x=> x.Chat)
               .Where(x => x.ChatId == chatId)
               .OrderBy(x => x.CreatedAt)
               .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
-              .ToListAsync();
-
-              await MarkMessagesAsRead(userId,chatId);
-              return result;
+              .ToListAsync(); 
         }
         finally
         {
@@ -74,67 +73,22 @@ namespace grup_gadu_api.Services
         }
         
     }
-
-    // public async Task<List<MessageDto>> GetUnreadMessages(int userId, int chatId)
-    // {   
-    //     ReaderWriterLockSlim slimLock = locks.GetOrAdd(chatId, new ReaderWriterLockSlim());
-    //     slimLock.EnterReadLock();
-    //     try
-    //     {
-    //         var result = await _context.Messages
-    //           .Include(x=> x.Author)
-    //           .Include(x=> x.SeenBy)
-    //           .Include(x=> x.Chat)
-    //           .Where(x => x.ChatId == chatId)
-    //           .Where(x=> !x.SeenBy.Any(y=> y.MessageId == x.Id && y.UserId == userId))
-    //           .OrderBy(x => x.CreatedAt)
-    //           .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
-    //           .ToListAsync();
-
-    //           //await MarkMessagesAsRead(userId,chatId);
-    //           return result;
-    //     }
-    //     finally
-    //     {
-    //         slimLock.ExitReadLock();
-    //     }
-    // }
-
-    private async Task MarkMessagesAsRead(int userId, int chatId)
-    {
-        var unreadMessagesId = await _context.Messages
-        .Include(x=> x.SeenBy)
-        .Where(x => x.ChatId == chatId)
-        .Where(x => x.AuthorId != userId)
-        .Where(x=> !x.SeenBy.Any(y=> y.MessageId == x.Id && y.UserId == userId))
-        .Select(x=> x.Id)
-        .ToListAsync();
-
-        if(unreadMessagesId.Count == 0) return;
-
-        List<UserMessages> userMessages = new List<UserMessages>();
-        foreach (int id in unreadMessagesId)
-        {
-            userMessages.Add(new UserMessages
-            {
-              MessageId = id,
-              UserId = userId,
-              SeenAt = DateTime.Now
-            });
-        }
-
-        _context.UserMessages.AddRange(userMessages);
-        await _context.SaveChangesAsync();
-    }
-
     private async Task<Message> GetMessageById(int messageId)
     {
           return await _context.Messages
             .Include(x=> x.Author)
-            .Include(x=> x.SeenBy)
             .Include(x=> x.Chat)
             .Where(x => x.Id == messageId)
             .FirstOrDefaultAsync();
+    }
+
+    private async Task<bool> HasPermission(int userId, int chatId)
+    {
+          return await _context.Chats
+           .Include(x=> x.Members)
+           .Where(x => x.Id == chatId)
+           .Where(x=> x.Members.Any(x=> x.UserId == userId) || x.OwnerId == userId)
+           .AnyAsync();
     }
   }
 }
