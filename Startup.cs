@@ -70,8 +70,10 @@ namespace grup_gadu_api
                         if(path.StartsWithSegments("/hubs/chat"))
                         {
                             var authHeader = context.HttpContext.Request.Headers.FirstOrDefault(x => x.Key == "Authorization");
-                            var token = authHeader.Value.ToString().Replace("Bearer ", string.Empty);
-                            context.Token = token;
+                            var tokenFromHeader = authHeader.Value.ToString().Replace("Bearer ", string.Empty);
+                            var tokenFromQuery = context.HttpContext.Request.Query.FirstOrDefault(x => x.Key == "access_token");
+
+                            context.Token = !string.IsNullOrEmpty(tokenFromHeader) ? tokenFromHeader : tokenFromQuery.Value;
                         }
                         return Task.CompletedTask;
                     }
