@@ -21,10 +21,16 @@ namespace grup_gadu_api.Controllers
     private readonly IChatRepository _chatRepository;
     private readonly IMapper _mapper;
     private readonly IUserRepository _userRepository;
+    private readonly IMessagesService _messagesService;
 
-    public ChatController(DataContext context, IChatRepository chatRepository, IMapper mapper, IUserRepository userRepository)
+    public ChatController(DataContext context, 
+           IChatRepository chatRepository, 
+           IMapper mapper, 
+           IUserRepository userRepository,
+           IMessagesService messagesService)
     {
       _userRepository = userRepository;
+      _messagesService = messagesService;
       _mapper = mapper;
       _chatRepository = chatRepository;
       _context = context;
@@ -66,12 +72,7 @@ namespace grup_gadu_api.Controllers
 
       foreach(var chatDto in chatsDto)
       {
-           chatDto.UnreadMessages = await _context.Messages
-           .Include(x=> x.SeenBy)
-           .Where(x => x.ChatId == chatDto.Id)
-           .Where(x => x.AuthorId != User.GetUserId())
-           .Where(x=> !x.SeenBy.Any(y=> y.MessageId == x.Id && y.UserId == User.GetUserId()))
-           .CountAsync();
+         chatDto.UnreadMessages = await _messagesService.CountUnreadMessages(User.GetUserId(),chatDto.Id);
       }
       return Ok(chatsDto);
     }
