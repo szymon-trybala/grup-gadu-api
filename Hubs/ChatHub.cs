@@ -67,14 +67,14 @@ namespace grup_gadu_api.Hubs
             }
         }
 
-        public async Task Invite(int userId, int chatId)
+        public async Task Invite(string userLogin, int chatId)
         {
           //ToDo: Move this code to service
           Chat chat = await _chatRepository.GetById(chatId);
-          AppUser user = await _userRepository.GetUserByIdAsync(userId);
+          AppUser user = await _userRepository.GetUserByLoginAsync(userLogin);
           int adminId = Context.User.GetUserId();
 
-          if (user == null) throw new Exception($"User with id {userId} was not found");
+          if (user == null) throw new Exception($"User with id {user.Id} was not found");
           if (chat == null) throw new Exception($"Chat with id {chatId} was not found");
           if (chat.OwnerId == user.Id) throw new Exception($"User with id {user.Id} is the admin of chat with id {chatId}");
           if (chat.OwnerId != adminId) throw new Exception($"You do not have administrator privileges to add members to the chat");
@@ -86,11 +86,11 @@ namespace grup_gadu_api.Hubs
           await _context.SaveChangesAsync();
 
           ChatDto chatDto = _mapper.Map<ChatDto>(await _chatRepository.GetById(chatId));
-          chatDto.UnreadMessages = await _messagesService.CountUnreadMessages(userId, chatId); 
-          await Clients.User(userId.ToString()).SendAsync("joinedToNewChat", chatDto);
+          chatDto.UnreadMessages = await _messagesService.CountUnreadMessages(user.Id, chatId); 
+          await Clients.User(user.Id.ToString()).SendAsync("joinedToNewChat", chatDto);
         }
 
-        public async Task ReadAllMesseges(int chatId)
+        public async Task ReadAllMessages(int chatId)
         {
             await _messagesService.MarkMessagesAsRead(Context.User.GetUserId(), chatId);
         }
