@@ -16,6 +16,7 @@ using System.Reflection;
 using System.IO;
 using System;
 using grup_gadu_api.Hubs;
+using System.Threading.Tasks;
 
 namespace grup_gadu_api
 {
@@ -50,13 +51,29 @@ namespace grup_gadu_api
                     .AllowCredentials();
             }));
             services.AddControllers();
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt => {
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(opt => {
                 opt.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["TokenKey"])),
                     ValidateIssuer = false,
                     ValidateAudience = false
+                };
+                opt.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/hubs/chat")))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
             services.AddSwaggerGen(c =>

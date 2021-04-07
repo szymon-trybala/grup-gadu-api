@@ -25,9 +25,20 @@ namespace grup_gadu_api.Services
       _context = context;
       _mapper = mapper;
     }
+
+    public async Task<int> CountUnreadMessages(int userId, int chatId)
+    {
+      return await _context.Messages
+           .Include(x=> x.SeenBy)
+           .Where(x => x.ChatId == chatId)
+           .Where(x => x.AuthorId != userId)
+           .Where(x=> !x.SeenBy.Any(y=> y.MessageId == x.Id && y.UserId == userId))
+           .CountAsync();
+    }
+
     public async Task<MessageDto>CreateMessage(int userId, int chatId, string messageContent)
     {
-        if(!(await HasPermission(userId, chatId))) 
+        if(!(await HasPermissionToRead(userId, chatId))) 
         throw new InvalidOperationException($"User does not have permission to participate in chat with id:{chatId}");
         
         ReaderWriterLockSlim slimLock = locks.GetOrAdd(chatId, new ReaderWriterLockSlim());
@@ -82,13 +93,40 @@ namespace grup_gadu_api.Services
             .FirstOrDefaultAsync();
     }
 
-    private async Task<bool> HasPermission(int userId, int chatId)
+    public async Task<bool> HasPermissionToRead(int userId, int chatId)
     {
           return await _context.Chats
            .Include(x=> x.Members)
            .Where(x => x.Id == chatId)
            .Where(x=> x.Members.Any(x=> x.UserId == userId) || x.OwnerId == userId)
            .AnyAsync();
+    }
+
+    public async Task MarkMessagesAsRead(int userId, int chatId)
+    {
+        List<int> unreadMessagesId = await _context.Messages
+        .Include(x=> x.SeenBy)
+        .Where(x => x.ChatId == chatId)
+        .Where(x => x.AuthorId != userId)
+        .Where(x=> !x.SeenBy.Any(y=> y.MessageId == x.Id && y.UserId == userId))
+        .Select(x=> x.Id)
+        .ToListAsync();
+
+        if(unreadMessagesId.Any())
+        {
+          List<UserMessages> userMessages = new List<UserMessages>();
+          foreach (int id in unreadMessagesId)
+          {
+              userMessages.Add(new UserMessages
+              {
+                MessageId = id,
+                UserId = userId,
+                SeenAt = DateTime.Now
+              });
+          }
+          _context.UserMessages.AddRange(userMessages);
+          await _context.SaveChangesAsync();
+        }
     }
   }
 }
