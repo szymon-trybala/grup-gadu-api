@@ -38,7 +38,7 @@ namespace grup_gadu_api.Services
 
     public async Task<MessageDto>CreateMessage(int userId, int chatId, string messageContent)
     {
-        if(!(await HasPermission(userId, chatId))) 
+        if(!(await HasPermissionToRead(userId, chatId))) 
         throw new InvalidOperationException($"User does not have permission to participate in chat with id:{chatId}");
         
         ReaderWriterLockSlim slimLock = locks.GetOrAdd(chatId, new ReaderWriterLockSlim());
@@ -93,7 +93,7 @@ namespace grup_gadu_api.Services
             .FirstOrDefaultAsync();
     }
 
-    private async Task<bool> HasPermission(int userId, int chatId)
+    public async Task<bool> HasPermissionToRead(int userId, int chatId)
     {
           return await _context.Chats
            .Include(x=> x.Members)
