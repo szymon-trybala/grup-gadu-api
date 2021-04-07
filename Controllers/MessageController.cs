@@ -44,7 +44,7 @@ namespace grup_gadu_api.Controllers
     [HttpGet("[action]")]
     public async Task<ActionResult<List<SeenByDto>>> Details([FromQuery] int chatId, [FromQuery] int messageId)
     {
-      if(await _messagesService.HasPermissionToRead(User.GetUserId(), chatId)) 
+      if(!await _messagesService.HasPermissionToRead(User.GetUserId(), chatId)) 
         return Unauthorized($"User does not have read messages from chat with id:{chatId}");
 
       if((await _context.Messages.FindAsync(messageId)).ChatId != chatId)

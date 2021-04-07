@@ -17,6 +17,7 @@ using System.IO;
 using System;
 using grup_gadu_api.Hubs;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace grup_gadu_api
 {
@@ -65,12 +66,12 @@ namespace grup_gadu_api
                 {
                     OnMessageReceived = context =>
                     {
-                        var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
-                        if (!string.IsNullOrEmpty(accessToken) &&
-                            (path.StartsWithSegments("/hubs/chat")))
+                        if(path.StartsWithSegments("/hubs/chat"))
                         {
-                            context.Token = accessToken;
+                            var authHeader = context.HttpContext.Request.Headers.FirstOrDefault(x => x.Key == "Authorization");
+                            var token = authHeader.Value.ToString().Replace("Bearer ", string.Empty);
+                            context.Token = token;
                         }
                         return Task.CompletedTask;
                     }

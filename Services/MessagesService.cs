@@ -95,11 +95,10 @@ namespace grup_gadu_api.Services
 
     public async Task<bool> HasPermissionToRead(int userId, int chatId)
     {
-          return await _context.Chats
-           .Include(x=> x.Members)
-           .Where(x => x.Id == chatId)
-           .Where(x=> x.Members.Any(x=> x.UserId == userId) || x.OwnerId == userId)
-           .AnyAsync();
+      var chat = await _context.Chats.Include(x => x.Members).FirstOrDefaultAsync(x => x.Id == chatId);
+      var isUserAdmin = chat.OwnerId == userId;
+      var isUserMember = chat.Members.Exists(x => x.UserId == userId);
+      return isUserAdmin || isUserMember;
     }
 
     public async Task MarkMessagesAsRead(int userId, int chatId)
